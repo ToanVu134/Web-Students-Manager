@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Management</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="register">
+        <h1>Register</h1>
+        <form id="registerForm">
+            <label for="regUsername">Username:</label>
+            <input type="text" id="regUsername" name="username" required>
+            <label for="regPassword">Password:</label>
+            <input type="password" id="regPassword" name="password" required>
+            <button type="submit">Register</button>
+        </form>
+    </div>
+    
+    <div id="login">
+        <h1>Login</h1>
+        <form id="loginForm">
+            <label for="logUsername">Username:</label>
+            <input type="text" id="logUsername" name="username" required>
+            <label for="logPassword">Password:</label>
+            <input type="password" id="logPassword" name="password" required>
+            <button type="submit">Login</button>
+        </form>
+    </div>
+    
+    <div id="students" style="display: none;">
+        <h1>Student List</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Age</th>
+                    <th>Major</th>
+                </tr>
+            </thead>
+            <tbody id="studentTableBody">
+                <!-- Student rows will be appended here -->
+            </tbody>
+        </table>
+        <button id="logoutButton">Logout</button>
+    </div>
+
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const username = e.target.username.value;
+            const password = e.target.password.value;
+            const response = await fetch('/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, password })
+            });
+            if (response.ok) {
+                alert('User registered successfully');
+            } else {
+                alert('Error registering user');
+            }
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const username = e.target.username.value;
+            const password = e.target.password.value;
+            const response = await fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, password })
+            });
+            if (response.ok) {
+                document.getElementById('login').style.display = 'none';
+                document.getElementById('students').style.display = 'block';
+                loadStudentTable();
+            } else {
+                alert('Invalid credentials');
+            }
+        });
+
+        document.getElementById('logoutButton').addEventListener('click', function() {
+            document.getElementById('students').style.display = 'none';
+            document.getElementById('login').style.display = 'block';
+        });
+
+        async function loadStudentTable() {
+            const response = await fetch('/students');
+            const students = await response.json();
+            const studentTableBody = document.getElementById('studentTableBody');
+            studentTableBody.innerHTML = '';
+            students.forEach(student => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${student.name}</td>
+                    <td>${student.email}</td>
+                    <td>${student.age}</td>
+                    <td>${student.major}</td>
+                `;
+                studentTableBody.appendChild(row);
+            });
+        }
+    </script>
+</body>
+</html>
